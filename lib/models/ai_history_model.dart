@@ -1,0 +1,50 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+class HistoryAI {
+  final String _apiKey = dotenv.env['GOOGLE_API_KEY'] ?? "";
+
+  final List<Content> _conversation = [
+    Content.text(
+      "Bạn là trợ lý AI chuyên về lịch sử Việt Nam và thế giới. "
+          "Giải thích rõ ràng, chính xác, dễ hiểu, phù hợp với học sinh và sinh viên. "
+          "Hãy trả lời bằng tiếng Việt, có thể thêm ví dụ hoặc mốc thời gian khi cần.",
+    ),
+  ];
+
+  static const int _maxMemory = 15;
+
+  void _trimMemory() {
+    if (_conversation.length > _maxMemory) {
+      _conversation.removeAt(1); // giữ lời nhắc đầu
+    }
+  }
+
+  Future<String> ask(String question) async {
+    if (_apiKey.isEmpty) {
+      return "❌ Chưa có API Key";
+    }
+
+    final model = GenerativeModel(
+      model: 'gemini-2.0-flash-lite', // hoặc 'gemini-1.5-flash' cho phản hồi nhanh
+      apiKey: _apiKey,
+    );
+
+    _conversation.add(Content.text("Câu hỏi: $question"));
+    _trimMemory();
+
+    try {
+      final response = await model.generateContent(_conversation);
+      final answer = response.text;
+
+      if (answer == null || answer.isEmpty) {
+        return "🤖 Không có phản hồi từ AI.";
+      }
+
+      _conversation.add(Content.text("Trả lời: $answer"));
+      return answer;
+    } catch (e) {
+      return "❌ Lỗi AI: $e";
+    }
+  }
+}
