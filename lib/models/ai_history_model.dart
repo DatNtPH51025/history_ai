@@ -6,9 +6,10 @@ class HistoryAI {
 
   final List<Content> _conversation = [
     Content.text(
-      "Bạn là trợ lý AI chuyên về lịch sử Việt Nam và thế giới. "
-          "Giải thích rõ ràng, chính xác, dễ hiểu, phù hợp với học sinh và sinh viên. "
-          "Hãy trả lời bằng tiếng Việt, có thể thêm ví dụ hoặc mốc thời gian khi cần.",
+        "Bạn là trợ lý AI về lịch sử Việt Nam và thế giới. "
+            "Hãy giải thích ngắn gọn, rõ ràng, dễ hiểu, như đang kể chuyện cho học sinh – sinh viên. "
+            "Đưa ra mốc thời gian, nhân vật, hoặc ví dụ thú vị để làm cho câu trả lời sinh động hơn. "
+            "Luôn trả lời bằng tiếng Việt."
     ),
   ];
 
@@ -26,7 +27,7 @@ class HistoryAI {
     }
 
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash-lite', // hoặc 'gemini-1.5-flash' cho phản hồi nhanh
+      model: 'gemini-2.0-flash', // hoặc 'gemini-1.5-flash' cho phản hồi nhanh
       apiKey: _apiKey,
     );
 

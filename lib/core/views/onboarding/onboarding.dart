@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:history_ai/home_page.dart';
+import 'package:history_ai/core/views/auth/login_screen.dart';
 
 class Onboarding extends StatelessWidget {
-  const Onboarding({Key? key}) : super(key: key);
+  const Onboarding({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +43,7 @@ class Onboarding extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyHomePage()),
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
                       (route) => false);
                 },
                 style: ElevatedButton.styleFrom(

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>254964195041-mug22dccsl70c8l367s69vmhd5r3gheg.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.254964195041-mug22dccsl70c8l367s69vmhd5r3gheg</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>254964195041-u91qamu5mkrcv6rpvkbgli0c2865rqd5.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBByBBqZeC02bqY2K6hqd0DymrX4sW6HWM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>254964195041</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.pro.historyAi</string>
+	<key>PROJECT_ID</key>
+	<string>chathitoryai</string>
+	<key>STORAGE_BUCKET</key>
+	<string>chathitoryai.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:254964195041:ios:65784b2240995d023fa1a0</string>
+</dict>
+</plist>

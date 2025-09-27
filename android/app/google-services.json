@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "254964195041",
+    "project_id": "chathitoryai",
+    "storage_bucket": "chathitoryai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254964195041:android:2b7ae6fbc41ded9e3fa1a0",
+        "android_client_info": {
+          "package_name": "com.pro.history_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "254964195041-u91qamu5mkrcv6rpvkbgli0c2865rqd5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pro.history_ai",
+            "certificate_hash": "514e10700acb11cc8224c3915e2ef1418c5451ec"
+          }
+        },
+        {
+          "client_id": "254964195041-mds01hpm1i4cn9j98a4r2ng2hf5ovd5h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwaJbkaw_p1LtDcs2uG3TUJ6sz3L5n2i8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "254964195041-mds01hpm1i4cn9j98a4r2ng2hf5ovd5h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "254964195041-mug22dccsl70c8l367s69vmhd5r3gheg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pro.historyAi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

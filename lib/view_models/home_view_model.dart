@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:history_ai/message.dart';
+import 'package:history_ai/core/services/firebase_chat_service.dart';
+import 'package:history_ai/models/message.dart';
 import 'package:history_ai/models/ai_history_model.dart';
-
 
 class HomeState {
   final List<Message> messages;
@@ -30,7 +30,8 @@ class HomeState {
 }
 
 class HomeViewModel extends StateNotifier<HomeState> {
-  final HistoryAI _aiModel = HistoryAI(); // ✅ Đổi sang HistoryAI
+  final HistoryAI _aiModel = HistoryAI();
+  final FirebaseChatService _chatService = FirebaseChatService(); // ✅ Firestore service
   final StreamController<String> _responseStreamController =
   StreamController<String>.broadcast();
 
@@ -48,39 +49,39 @@ class HomeViewModel extends StateNotifier<HomeState> {
     final userMessage = state.controller.text.trim();
     if (userMessage.isEmpty) return;
 
-    // Thêm câu hỏi người dùng
-    state = state.copyWith(
-      messages: [
-        ...state.messages,
-        Message(text: userMessage, isUser: true),
-        Message(text: "...", isUser: false),
-      ],
-      isLoading: true,
-    );
+    final userMsg = Message(text: userMessage, isUser: true);
+
+    // Thêm user message + placeholder
+    final updatedMessages = [...state.messages, userMsg, Message(text: "Đang trả lời...", isUser: false)];
+    state = state.copyWith(messages: updatedMessages, isLoading: true);
+    await _chatService.saveMessage(userMsg);
 
     try {
       final responseText = await _aiModel.ask(userMessage);
+      final aiMsg = Message(text: responseText, isUser: false);
 
-      // Thêm trả lời AI
-      _responseStreamController.add(responseText);
-      state = state.copyWith(
-        messages: [
-          ...state.messages.sublist(0, state.messages.length - 1),
-          Message(text: responseText, isUser: false),
-        ],
-      );
+      // 🔥 Ghi đè placeholder cuối bằng AI response
+      final replaced = [...state.messages];
+      replaced[replaced.length - 1] = aiMsg;
+
+      state = state.copyWith(messages: replaced);
+      await _chatService.saveMessage(aiMsg);
+
     } catch (e) {
-      state = state.copyWith(
-        messages: [
-          ...state.messages,
-          Message(text: "Lỗi: ${e.toString()}", isUser: false),
-        ],
-      );
+      final errorMsg = Message(text: "Lỗi: ${e.toString()}", isUser: false);
+
+      final replaced = [...state.messages];
+      replaced[replaced.length - 1] = errorMsg;
+
+      state = state.copyWith(messages: replaced);
+      await _chatService.saveMessage(errorMsg);
     } finally {
+      // 🔄 luôn reset loading và clear input
       state = state.copyWith(isLoading: false);
       state.controller.clear();
     }
   }
+
 
   @override
   void dispose() {
