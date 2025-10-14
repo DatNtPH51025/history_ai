@@ -1,91 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:history_ai/core/views/auth/login_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// ✅ SỬA 1: Đổi import về đúng file provider đã tạo ở bước trước
+import 'package:history_ai/providers/auth_provider.dart';
+import 'package:history_ai/providers/theme_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentThemeMode = ref.watch(themeNotifierProvider);
+    // Lấy thông tin người dùng từ authProvider
+    final user = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thông tin cá nhân'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text('Hồ sơ & Cài đặt'),
       ),
-      body: user == null
-          ? const Center(
-        child: Text('Không có thông tin người dùng'),
-      )
-          : Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Ảnh đại diện
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: user.photoURL != null
-                  ? NetworkImage(user.photoURL!)
-                  : const AssetImage('assets/user_avatar.png')
-              as ImageProvider,
-            ),
-            const SizedBox(height: 20),
-
-            // Tên người dùng
-            Text(
-              user.displayName ?? 'Người dùng chưa đặt tên',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+      body: ListView(
+        children: [
+          // ✅ SỬA 2: Kiểm tra xem user có null không trước khi hiển thị header
+          if (user != null)
+            UserAccountsDrawerHeader(
+              accountName: Text(user.displayName ?? 'Không có tên'),
+              accountEmail: Text(user.email ?? 'Không có email'),
+              currentAccountPicture: CircleAvatar(
+                backgroundImage: (user.photoURL != null
+                    ? NetworkImage(user.photoURL!)
+                // Thêm 'as ImageProvider' để ép kiểu rõ ràng
+                    : const AssetImage('assets/splashscreen.png'))
+                as ImageProvider,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+              ),
+            )
+          else
+          // Hiển thị một placeholder nếu không có thông tin người dùng
+            const SizedBox(
+              height: 100,
+              child: Center(
+                child: CircularProgressIndicator(),
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            // Email
-            Text(
-              user.email ?? 'Không có email',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+          ListTile(
+            title: const Text('Chế độ tối'),
+            trailing: IconButton(
+              icon: Icon(
+                currentThemeMode == ThemeMode.dark
+                    ? Icons.dark_mode
+                    : Icons.light_mode,
               ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // Nút đăng xuất
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                Theme.of(context).colorScheme.onSecondary,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => LoginScreen(),
-                    ),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đăng xuất thành công!'),
-                    ),
-                  );
-                }
+              onPressed: () {
+                ref.read(themeNotifierProvider.notifier).toggleTheme();
               },
-              icon: const Icon(Icons.logout),
-              label: const Text('Đăng xuất'),
             ),
-          ],
-        ),
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red.shade700),
+            title: Text('Đăng xuất', style: TextStyle(color: Colors.red.shade700)),
+            onTap: () async {
+              // Gọi hàm signOut từ provider
+              await ref.read(authProvider.notifier).signOut();
+              // Đóng tất cả các màn hình và quay về AuthWrapper
+              if (context.mounted) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
+            },
+          )
+        ],
       ),
     );
   }
