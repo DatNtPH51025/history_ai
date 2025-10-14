@@ -1,18 +1,14 @@
+// auth_view_model.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../core/services/firebase_auth_service.dart';
 
-/// State lưu trữ thông tin đăng nhập
 class AuthState {
   final User? user;
   final bool isLoading;
   final String? error;
 
-  AuthState({
-    this.user,
-    this.isLoading = false,
-    this.error,
-  });
+  AuthState({this.user, this.isLoading = false, this.error});
 
   AuthState copyWith({User? user, bool? isLoading, String? error}) {
     return AuthState(
@@ -23,14 +19,13 @@ class AuthState {
   }
 }
 
-/// Notifier quản lý state
 class AuthNotifier extends StateNotifier<AuthState> {
   final FirebaseAuthService _authService;
 
-  AuthNotifier(this._authService) : super(AuthState()) {
-    // Theo dõi trạng thái đăng nhập từ Firebase
+  AuthNotifier(this._authService) : super(AuthState(isLoading: true)) {
+    // Theo dõi auth state
     _authService.authStateChanges().listen((user) {
-      state = state.copyWith(user: user, isLoading: false, error: null);
+      state = AuthState(user: user, isLoading: false);
     });
   }
 
@@ -65,12 +60,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
+    state = state.copyWith(isLoading: true);
     await _authService.signOut();
-    state = AuthState(user: null);
+    state = AuthState(user: null, isLoading: false);
   }
 }
 
-/// Provider Riverpod cho AuthNotifier
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(FirebaseAuthService());
-});
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
+      (ref) => AuthNotifier(FirebaseAuthService()),
+);

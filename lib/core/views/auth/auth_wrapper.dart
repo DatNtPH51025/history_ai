@@ -1,3 +1,4 @@
+// auth_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:history_ai/view_models/auth_view_model.dart';
@@ -11,10 +12,17 @@ class AuthWrapper extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
 
+    // Hiển thị loading khi Firebase auth đang xác thực
+    if (authState.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (authState.user != null) {
-      return const MyHomePage(); // ✅ Nếu đã login
+      return const MyHomePage();
     } else {
-      return LoginScreen(); // ❌ Nếu chưa login
+      return const LoginScreen();
     }
   }
 }

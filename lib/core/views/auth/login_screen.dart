@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:history_ai/core/views/auth/forgot_password_screen.dart';
 import 'package:history_ai/core/views/auth/signup_screen.dart';
 import 'package:history_ai/core/views/home/home_page.dart';
 import 'package:history_ai/view_models/auth_view_model.dart';
@@ -168,6 +169,15 @@ class LoginScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 30),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                  );
+                },
+                child: const Text("Quên mật khẩu?", style: TextStyle(color: Colors.blueAccent)),
+              ),
 
               // Điều hướng sang Sign Up
               TextButton(
