@@ -27,7 +27,7 @@ class HistoryAI {
     }
 
     final model = GenerativeModel(
-      model: 'gemini-2.0-flash', // hoặc 'gemini-1.5-flash' cho phản hồi nhanh
+      model: 'gemini-2.0-flash',
       apiKey: _apiKey,
     );
 

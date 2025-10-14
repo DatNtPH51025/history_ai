@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart'; // thêm dòng này
 import 'package:history_ai/core/theme/themeNotifier.dart';
 import 'package:history_ai/core/theme/themes.dart';
+import 'package:history_ai/core/views/auth/auth_wrapper.dart';
 import 'package:history_ai/core/views/onboarding/onboarding.dart';
 
 void main() async {
@@ -25,7 +26,7 @@ class MyApp extends ConsumerWidget {
       theme: lightMode,
       darkTheme: darkMode,
       themeMode: themeMode,
-      home: Onboarding(),
+      home: AuthWrapper(),
       debugShowCheckedModeBanner: false,
     );
   }
