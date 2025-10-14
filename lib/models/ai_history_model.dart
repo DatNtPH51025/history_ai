@@ -1,51 +1,58 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:history_ai/models/message.dart' as app_message; // Sử dụng bí danh để tránh xung đột tên
 
 class HistoryAI {
-  final String _apiKey = dotenv.env['GOOGLE_API_KEY'] ?? "";
+  final GenerativeModel _model;
 
-  final List<Content> _conversation = [
-    Content.text(
-        "Bạn là trợ lý AI về lịch sử Việt Nam và thế giới. "
-            "Hãy giải thích ngắn gọn, rõ ràng, dễ hiểu, như đang kể chuyện cho học sinh – sinh viên. "
-            "Đưa ra mốc thời gian, nhân vật, hoặc ví dụ thú vị để làm cho câu trả lời sinh động hơn. "
-            "Luôn trả lời bằng tiếng Việt."
-    ),
-  ];
+  // Lời nhắc hệ thống, được giữ lại theo yêu cầu của bạn
+  static final Content systemPrompt = Content.text(
+      "Bạn là một trợ lý AI chuyên về lịch sử Việt Nam và thế giới. "
+          "Hãy giải thích các sự kiện một cách ngắn gọn, rõ ràng và dễ hiểu, như thể bạn đang kể chuyện cho học sinh hoặc sinh viên. "
+          "Hãy bao gồm các mốc thời gian, nhân vật quan trọng, hoặc các chi tiết thú vị để làm cho câu chuyện trở nên sinh động. "
+          "Luôn luôn trả lời bằng tiếng Việt.");
 
-  static const int _maxMemory = 15;
-
-  void _trimMemory() {
-    if (_conversation.length > _maxMemory) {
-      _conversation.removeAt(1); // giữ lời nhắc đầu
-    }
-  }
-
-  Future<String> ask(String question) async {
-    if (_apiKey.isEmpty) {
-      return "❌ Chưa có API Key";
-    }
-
-    final model = GenerativeModel(
-      model: 'gemini-2.0-flash',
-      apiKey: _apiKey,
-    );
-
-    _conversation.add(Content.text("Câu hỏi: $question"));
-    _trimMemory();
-
+  // Constructor: Nhận API key từ bên ngoài để khởi tạo model
+  // Điều này giúp quản lý key tập trung và an toàn hơn.
+  HistoryAI({required String apiKey})
+      : _model = GenerativeModel(
+    // ✅ SỬA DÒNG NÀY
+    model: 'gemini-2.5-flash', // Bỏ phần "-latest"
+    apiKey: apiKey,
+  );
+  // Hàm "ask" mới: Nhận cả câu hỏi và lịch sử trò chuyện (context)
+  Future<String> ask(
+      String question, List<app_message.Message> history) async {
     try {
-      final response = await model.generateContent(_conversation);
+      // 1. Xây dựng nội dung gửi cho AI
+      final List<Content> conversation = [
+        systemPrompt, // Bắt đầu với lời nhắc hệ thống
+      ];
+
+      // 2. Chuyển đổi lịch sử tin nhắn từ model của app sang model của Google AI
+      for (final message in history) {
+        if (message.isUser) {
+          conversation.add(Content.text(message.text));
+        } else {
+          // Tin nhắn của AI được coi là 'model' response
+          conversation.add(Content.model([TextPart(message.text)]));
+        }
+      }
+
+      // 3. Thêm câu hỏi mới nhất của người dùng
+      conversation.add(Content.text(question));
+
+      // 4. Gọi API
+      final response = await _model.generateContent(conversation);
       final answer = response.text;
 
       if (answer == null || answer.isEmpty) {
-        return "🤖 Không có phản hồi từ AI.";
+        return "🤖 Rất tiếc, tôi không thể tìm thấy câu trả lời. Vui lòng thử lại.";
       }
-
-      _conversation.add(Content.text("Trả lời: $answer"));
       return answer;
     } catch (e) {
-      return "❌ Lỗi AI: $e";
+      print("Lỗi khi gọi API của Google AI: $e"); // In lỗi ra console để dễ gỡ lỗi
+      return "❌ Đã xảy ra lỗi khi kết nối với AI. Vui lòng kiểm tra lại kết nối hoặc API key.";
     }
   }
 }
+
