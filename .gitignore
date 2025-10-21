@@ -1,45 +1,61 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+gitignore
+# File chứa các biến môi trường và thông tin nhạy cảm.
+# RẤT QUAN TRỌNG: Luôn bỏ qua file .env
+.env
+*.env
 
-# IntelliJ related
+# File hệ điều hành.
+# Operating system files.
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# File cấu hình của các IDE (tránh xung đột cài đặt cá nhân).
+# IDE configuration files.
+.idea/
+.vscode/
 *.iml
 *.ipr
 *.iws
-.idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# File log và file tạm.
+# Log files and temporary files.
+*.log
+*.class
+*.pyc
+*.swp
+*.tmp
+*.zip
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# File và thư mục được tạo bởi các công cụ của Dart/Flutter.
+# These are files and directories created by the Dart/Flutter tools.
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
-
-# Symbolication related
+build/
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Các thư mục build của từng nền tảng cụ thể
+# Platform-specific build artifacts.
+/ios/.symlinks/
+/ios/Flutter/
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/key.properties
+/windows/flutter/ephemeral
+/windows/flutter/ephemeral.plugin_symlinks
+/windows/runner/Debug/
+/windows/runner/Profile/
+/windows/runner/Release/
+/linux/flutter/ephemeral
+/linux/flutter/ephemeral.plugin_symlinks
+/linux/build/
+/macos/Flutter/ephemeral
+/macos/Flutter/ephemeral.plugin_symlinks
+/macos/build/
+

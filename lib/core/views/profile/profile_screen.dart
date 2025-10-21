@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:history_ai/providers/auth_provider.dart';
 import 'package:history_ai/providers/theme_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:intl/intl.dart'; // ✅ THÊM DÒNG NÀY
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 // Provider để lấy thông tin phiên bản (sử dụng FutureProvider)
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
   return await PackageInfo.fromPlatform();
@@ -12,6 +13,18 @@ final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  void _launchURL(BuildContext context, String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      // Nếu không thể mở URL, hiển thị thông báo lỗi
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể mở đường dẫn: $urlString')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -94,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
             onTap: () {
-              // TODO: Thêm logic đổi ngôn ngữ trong tương lai
+              // Thêm logic đổi ngôn ngữ
             },
           ),
 
@@ -103,19 +116,26 @@ class ProfileScreen extends ConsumerWidget {
           ListTile(
             leading: Icon(Icons.policy_outlined, color: Theme.of(context).colorScheme.primary),
             title: const Text('Chính sách bảo mật'),
-            onTap: () { /* TODO: Mở link chính sách */ },
+            onTap: () {
+              // Thay thế bằng URL chính sách bảo mật của bạn
+              _launchURL(context, 'https://www.google.com/policies/privacy/');
+            },
           ),
           ListTile(
             leading: Icon(Icons.description_outlined, color: Theme.of(context).colorScheme.primary),
             title: const Text('Điều khoản dịch vụ'),
-            onTap: () { /* TODO: Mở link điều khoản */ },
+            onTap: () {
+              // Thay thế bằng URL điều khoản dịch vụ của bạn
+              _launchURL(context, 'https://policies.google.com/terms');
+            },
           ),
           // Hiển thị phiên bản ứng dụng từ packageInfoProvider
           packageInfo.when(
-            data: (info) => _buildInfoTile('Phiên bản', '${info.version} (${info.buildNumber})', Icons.info_outline),
+            data: (info) => _buildInfoTile('Phiên bản', info.version, Icons.info_outline), // Chỉ hiển thị info.version
             loading: () => const ListTile(title: Text('Đang tải phiên bản...')),
-            error: (err, stack) => _buildInfoTile('Phiên bản', 'Lỗi', Icons.error_outline),
+            error: (err, stack) => _buildInfoTile('Phiên bản', '1.0.0', Icons.info_outline), // ✅ Hiển thị phiên bản cứng khi có lỗi
           ),
+
 
           // --- 5. NHÓM HÀNH ĐỘNG NGUY HIỂM ---
           const SizedBox(height: 24),
