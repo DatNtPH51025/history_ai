@@ -1,4 +1,3 @@
-// firebase_auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -14,8 +13,9 @@ class FirebaseAuthService {
       final userCredential =
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
-    } catch (e) {
-      throw Exception(e.toString());
+    } on FirebaseAuthException catch (e) {
+      // ✅ SỬA LẠI: Ném lại chính xác lỗi FirebaseAuthException
+      rethrow;
     }
   }
 
@@ -24,15 +24,20 @@ class FirebaseAuthService {
       final userCredential =
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
-    } catch (e) {
-      throw Exception(e.toString());
+    } on FirebaseAuthException catch (e) {
+      // ✅ SỬA LẠI: Ném lại chính xác lỗi FirebaseAuthException
+      rethrow;
     }
   }
 
   Future<User?> signInWithGoogle() async {
     try {
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      // Nếu người dùng đóng cửa sổ popup
+      if (googleUser == null) {
+        // Ném một lỗi cụ thể để ViewModel có thể bắt
+        throw FirebaseAuthException(code: 'cancelled', message: 'Google Sign-In was cancelled by user.');
+      }
 
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
@@ -42,16 +47,23 @@ class FirebaseAuthService {
 
       final userCredential = await _auth.signInWithCredential(credential);
       return userCredential.user;
-    } catch (e) {
-      throw Exception("Google Sign-In failed: $e");
+    } on FirebaseAuthException catch (e) {
+      // ✅ SỬA LẠI: Ném lại chính xác lỗi FirebaseAuthException
+      rethrow;
+    } catch(e) {
+      // Bắt các lỗi khác và ném lại một cách chung chung hơn nếu cần
+      rethrow;
     }
   }
 
   Future<void> signOut() async {
     await _auth.signOut();
     try {
-      await _googleSignIn.disconnect(); // xóa cache Google
-    } catch (_) {}
-    await _googleSignIn.signOut();
+      // disconnect() không cần thiết và đôi khi gây ra luồng xác thực lại không mong muốn
+      // Chỉ cần signOut là đủ để xóa phiên đăng nhập
+      await _googleSignIn.signOut();
+    } catch (_) {
+      // Bỏ qua lỗi nếu người dùng chưa từng đăng nhập bằng Google
+    }
   }
 }

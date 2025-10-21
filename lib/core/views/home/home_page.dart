@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:history_ai/core/views/profile/profile_screen.dart';
 import 'package:history_ai/providers/auth_provider.dart'; // Import để lấy thông tin user
+import 'package:history_ai/providers/connectivity_provider.dart';
 import 'package:history_ai/widgets/chat_history_drawer.dart';
 import 'package:history_ai/widgets/chat_view.dart';
 
@@ -12,6 +13,7 @@ class MyHomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Lấy thông tin người dùng để hiển thị avatar
     final user = ref.watch(authProvider);
+    final isConnected = ref.watch(isConnectedProvider); //
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -52,6 +54,22 @@ class MyHomePage extends ConsumerWidget {
             ),
           ),
         ],
+        bottom: isConnected
+            ? null // Không hiển thị gì khi có mạng
+            : PreferredSize(
+          preferredSize: const Size.fromHeight(24.0),
+          child: Container(
+            height: 24,
+            width: double.infinity,
+            color: Colors.orange.shade800,
+            child: const Center(
+              child: Text(
+                'Không có kết nối mạng',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ),
+          ),
+        ),
       ),
       // Toàn bộ phần thân của trang đã được tách ra
       body: const ChatView(),
