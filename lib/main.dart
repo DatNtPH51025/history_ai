@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:history_ai/core/views/auth/auth_wrapper.dart';
-import 'package:history_ai/core/views/onboarding/onboarding.dart'; // ✅ Import Onboarding
-import 'package:history_ai/providers/theme_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'firebase_options.dart';
+import 'core/theme/themes.dart'; // lightMode and darkMode
+import 'data/datasources/auth_remote_datasource.dart';
+import 'data/datasources/chat_remote_datasource.dart';
+import 'data/datasources/theme_local_datasource.dart';
+import 'data/repositories/auth_repository_impl.dart';
+import 'data/repositories/chat_repository_impl.dart';
+import 'data/repositories/theme_repository_impl.dart';
+import 'domain/repositories/auth_repository.dart';
+import 'domain/repositories/chat_repository.dart';
+import 'domain/repositories/theme_repository.dart';
+import 'presentation/cubits/auth/auth_cubit.dart';
+import 'presentation/cubits/chat/chat_cubit.dart';
+import 'presentation/cubits/theme/theme_cubit.dart';
+import 'presentation/views/auth/auth_wrapper.dart';
+import 'presentation/views/onboarding/onboarding.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,45 +28,70 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ✅ Lấy SharedPreferences để kiểm tra
+  final apiKey = dotenv.env['GOOGLE_API_KEY'];
+  if (apiKey == null) {
+    throw Exception("API_KEY không được tìm thấy trong file .env");
+  }
+
+  // Khởi tạo data sources
+  final authRemoteDataSource = AuthRemoteDataSource();
+  final chatRemoteDataSource = ChatRemoteDataSource(apiKey: apiKey);
+  final themeLocalDataSource = ThemeLocalDataSource();
+
+  // Khởi tạo repositories
+  final authRepository = AuthRepositoryImpl(authRemoteDataSource);
+  final chatRepository = ChatRepositoryImpl(chatRemoteDataSource);
+  final themeRepository = ThemeRepositoryImpl(themeLocalDataSource);
+
+  // Lấy SharedPreferences để kiểm tra trạng thái Onboarding
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
-  runApp(ProviderScope(
-    child: MyApp(hasSeenOnboarding: hasSeenOnboarding), // ✅ Truyền giá trị vào MyApp
-  ));
+  runApp(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<AuthRepository>.value(value: authRepository),
+        RepositoryProvider<ChatRepository>.value(value: chatRepository),
+        RepositoryProvider<ThemeRepository>.value(value: themeRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<ThemeCubit>(
+            create: (context) => ThemeCubit(context.read<ThemeRepository>()),
+          ),
+          BlocProvider<AuthCubit>(
+            create: (context) => AuthCubit(context.read<AuthRepository>()),
+          ),
+          BlocProvider<ChatCubit>(
+            create: (context) => ChatCubit(
+              chatRepository: context.read<ChatRepository>(),
+              authRepository: context.read<AuthRepository>(),
+            ),
+          ),
+        ],
+        child: MyApp(hasSeenOnboarding: hasSeenOnboarding),
+      ),
+    ),
+  );
 }
 
-class MyApp extends ConsumerWidget {
-  final bool hasSeenOnboarding; // ✅ Nhận giá trị
+class MyApp extends StatelessWidget {
+  final bool hasSeenOnboarding;
 
   const MyApp({super.key, required this.hasSeenOnboarding});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeNotifierProvider);
+  Widget build(BuildContext context) {
+    // Lắng nghe sự thay đổi của themeMode từ ThemeCubit
+    final themeMode = context.watch<ThemeCubit>().state;
 
     return MaterialApp(
       title: 'History AI',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: lightMode,
+      darkTheme: darkMode,
       themeMode: themeMode,
       debugShowCheckedModeBanner: false,
-      // ✅ Quyết định màn hình đầu tiên ở đây
       home: hasSeenOnboarding ? const AuthWrapper() : const Onboarding(),
     );
   }
 }
-
